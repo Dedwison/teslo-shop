@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Product {
@@ -10,7 +10,7 @@ export class Product {
   })
   title: string;
 
-  @Column('numeric', {
+  @Column('float', {
     default: 0,
   })
   price: number;
@@ -41,4 +41,21 @@ export class Product {
 
   //tags
   //images
+
+  @BeforeInsert()
+  checSlugInsert() {
+    if (!this.slug) {
+      this.slug = this.title;
+    }
+    this.slug = this.slug
+      .normalize('NFD') // Normaliza caracteres especiales (ej: á -> a)
+      .replace(/[\u0300-\u036f]/g, '') // Elimina diacríticos (acentos)
+      .toLowerCase() // Convierte todo a minúsculas
+      .trim() // Elimina espacios al inicio y final
+      .replaceAll(' ', '_') // Reemplaza espacios por guiones bajos
+      .replaceAll("'", '') // Elimina comillas simples
+      .replace(/[^a-z0-9]/g, ''); // Elimina todo excepto letras y números
+  }
+
+  //@BeforeUpdate()
 }
