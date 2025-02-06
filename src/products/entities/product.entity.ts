@@ -53,8 +53,8 @@ export class Product {
       .toLowerCase() // Convierte todo a minúsculas
       .trim() // Elimina espacios al inicio y final
       .replaceAll(' ', '_') // Reemplaza espacios por guiones bajos
-      .replaceAll("'", '') // Elimina comillas simples
-      .replace(/[^a-z0-9]/g, ''); // Elimina todo excepto letras y números
+      .replaceAll("'", ''); // Elimina comillas simples
+    // .replace(/[^a-z0-9]/g, ''); // Elimina todo excepto letras y números
   }
 
   //@BeforeUpdate()
