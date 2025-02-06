@@ -1,4 +1,10 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Product {
@@ -57,5 +63,14 @@ export class Product {
     // .replace(/[^a-z0-9]/g, ''); // Elimina todo excepto letras y números
   }
 
-  //@BeforeUpdate()
+  @BeforeUpdate()
+  checkSlugUpdate() {
+    this.slug = this.slug
+      .normalize('NFD') // Normaliza caracteres especiales (ej: á -> a)
+      .replace(/[\u0300-\u036f]/g, '') // Elimina diacríticos (acentos)
+      .toLowerCase() // Convierte todo a minúsculas
+      .trim() // Elimina espacios al inicio y final
+      .replaceAll(' ', '_') // Reemplaza espacios por guiones bajos
+      .replaceAll("'", ''); // Elimina comillas simples
+  }
 }
