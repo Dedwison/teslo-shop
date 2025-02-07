@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   BeforeInsert,
   BeforeUpdate,
   Column,
@@ -46,7 +47,15 @@ export class Product {
   gender: string;
 
   //tags
+
+  @Column('text', {
+    array: true,
+    default: [],
+  })
+  tags: string[];
   //images
+
+  private tempTitle: string = '';
 
   @BeforeInsert()
   checSlugInsert() {
@@ -63,8 +72,17 @@ export class Product {
     // .replace(/[^a-z0-9]/g, ''); // Elimina todo excepto letras y números
   }
 
+  @AfterLoad()
+  checkTitlePost() {
+    if (this.title) {
+      this.tempTitle = this.title;
+    }
+  }
+
   @BeforeUpdate()
   checkSlugUpdate() {
+    if (!this.slug || this.tempTitle !== '') this.slug = this.title; // cambiar el slug cuando el titulo cambia
+
     this.slug = this.slug
       .normalize('NFD') // Normaliza caracteres especiales (ej: á -> a)
       .replace(/[\u0300-\u036f]/g, '') // Elimina diacríticos (acentos)
