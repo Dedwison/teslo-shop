@@ -24,3 +24,9 @@
 ```
   yarn start:dev
 ```
+
+7. ejecutar SEED.
+
+```
+http://localhost:3000/api/seed
+```
