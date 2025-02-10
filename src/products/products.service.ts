@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -13,11 +7,10 @@ import { DataSource, Repository } from 'typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { validate as isUUID } from 'uuid';
 import { Product, ProductImage } from './entities';
+import { PostgresHandlerExceptions } from 'src/common/exceptions/postgres-handlerExceptions';
 
 @Injectable()
 export class ProductsService {
-  private readonly logger = new Logger('ProductsService');
-
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -25,6 +18,7 @@ export class ProductsService {
     private readonly productImageRepository: Repository<ProductImage>,
 
     private readonly dataSource: DataSource,
+    private readonly postgresHandlerExceptions: PostgresHandlerExceptions,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -40,7 +34,7 @@ export class ProductsService {
       // return product;
       return { ...product, images }; // retornar el producto con la estructura de imagenes recibidas (un array de strings y no un array de objetos)
     } catch (error) {
-      this.handleDBExceptions(error);
+      this.postgresHandlerExceptions.handleDBExceptions(error);
     }
   }
 
@@ -122,7 +116,7 @@ export class ProductsService {
       // return product;
       return this.findOnePlain(id);
     } catch (error) {
-      this.handleDBExceptions(error);
+      this.postgresHandlerExceptions.handleDBExceptions(error);
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
     }
@@ -139,23 +133,13 @@ export class ProductsService {
     }
   }
 
-  private handleDBExceptions(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
-
-    this.logger.error(error);
-    // console.log(error);
-    throw new InternalServerErrorException(
-      'Unexpected error, check server logs',
-    );
-  }
-
   async deleteAllProducts() {
     const query = this.productRepository.createQueryBuilder('product');
 
     try {
       return await query.delete().where({}).execute();
     } catch (error) {
-      this.handleDBExceptions(error);
+      this.postgresHandlerExceptions.handleDBExceptions(error);
     }
   }
 }
